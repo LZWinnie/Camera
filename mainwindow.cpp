@@ -853,9 +853,9 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             QPoint eventpoint = event->globalPos();
             eventpoint = ui->gunWindowLabel->mapFromGlobal(eventpoint);
             //进行坐标到角度的变换
-            vertical=0.2436*eventpoint.y() + 43.948;
+            vertical=0.239*eventpoint.y() + 45.653;
             horizon=-0.3101*eventpoint.x() + 634.28;
-            zoom=50;
+            zoom=128;
             if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_EXTPTZ_EXACTGOTO,horizon,vertical,zoom,FALSE,NULL))
             {
                 ui->statusBar->showMessage("Go Fail!",2000);
