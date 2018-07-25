@@ -161,6 +161,7 @@ void MainWindow::loginSlot()
     else  // 登录成功
     {
         ui->statusBar->showMessage("Login Success!",1000);
+        ui->tabWidget->setCurrentIndex(0);//首先显示球机窗口
         ballCap->open("rtsp://admin:123456@lab.zhuzhuguowang.cn:36955/cam/realmonitor?channel=1&subtype=0");//连接摄像头
         gunCap->open("rtsp://admin:123456@lab.zhuzhuguowang.cn:36958/cam/realmonitor?channel=1&subtype=0");//连接枪机摄像头
         BALL=true;
