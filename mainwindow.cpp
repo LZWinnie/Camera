@@ -879,8 +879,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             QPoint eventpoint = event->globalPos();
             eventpoint = ui->gunWindowLabel->mapFromGlobal(eventpoint);
             //进行坐标到角度的变换
-            vertical=0.239*eventpoint.y() + 49.653;
-            horizon=-0.3101*eventpoint.x() + 634.28;
+            vertical=0.2342*eventpoint.y() - 89.963;
+            horizon=-0.306*eventpoint.x() + 636.85;
             zoom=128;
             if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_EXTPTZ_EXACTGOTO,horizon,vertical,zoom,FALSE,NULL))
             {
