@@ -39,6 +39,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    QImage Mat2QImage(const cv::Mat& mat);
 
 protected:
     void closeEvent(QCloseEvent *);
@@ -103,7 +104,7 @@ class ImgPro : public QObject
 
 public:
     explicit ImgPro(QObject *parent = 0){}
-    QImage Mat2QImage(const cv::Mat& mat);
+
 signals:
     //void showball();//——v1.6
     //void showgun();

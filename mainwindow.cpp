@@ -27,8 +27,8 @@ int horizon,vertical;
 int zoom;
 
 //帧率相关——v1.6
-double ballRate=15;
-double gunRate=30;
+double ballRate=10;
+double gunRate=10;
 //图像处理临时变量
 QImage ballshow,gunshow;
 Mat ball,gun;
@@ -140,18 +140,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-<<<<<<< HEAD
-=======
-/*//打开摄像头——v1.0
-//更改为登录loginSlot——v1.2
-void MainWindow::startCameraSlot()
-{
-    cap->open("rtsp://admin:123456@192.168.73.110:36955/cam/realmonitor?channel=1&subtype=0");//连接摄像头
-    emit startCamera();//发射一个摄像头开启信号
-    timer->start(1);//开启定时器
-    ui->statusBar->showMessage("Login!", 5000);//状态栏显示
-}*/
->>>>>>> a8a573676f543f28c1aed5776e3fbf2a7b2ca538
 //登陆函数——v1.2
 void MainWindow::loginSlot()
 {
@@ -237,45 +225,36 @@ void MainWindow::logoutSlot()
     ui->statusBar->showMessage("Logout!",2000);
 }
 
-<<<<<<< HEAD
-=======
-/*//在界面上显示图像——v1.0
-//由于会影响速度，所以将其通过QThread移动至其他线程后台处理——v1.1
-void MainWindow::getFrameSlot()
-{
-    if(cap->isOpened())//如果连接成功
-    {
-        cap->read(img);//读一帧
-        cv::resize(img,img,Size(800,590),0,0,INTER_AREA);
-        image=Mat2QImage(img);//转换为QImage类
-        ui->showWindowLabel->setPixmap(QPixmap::fromImage(image));//在界面上显示
-    }
-    else//如果连接失败
-    {
-        qDebug()<<"ERROR: Can't open the camera";
-        return;
-    }
-}
-*/
 
->>>>>>> a8a573676f543f28c1aed5776e3fbf2a7b2ca538
 //显示图像——v1.1
 void MainWindow::showBallSlot()
 {
+    mutex1.lock();//互斥锁
+    ball=ballImg.clone();//复制一个mat用于处理
+    mutex1.unlock();//解锁
+    cv::resize(ball,ball,Size(lwidth,lheight),0,0,INTER_AREA);
     mutex3.lock();
-    ballshow=ballImage.copy();
+    ballImage=MainWindow::Mat2QImage(ball);
+    ui->ballWindowLabel->setPixmap(QPixmap::fromImage(ballImage));
     mutex3.unlock();
-    ui->ballWindowLabel->setPixmap(QPixmap::fromImage(ballshow));//在界面上显示
+
+    //在界面上显示
     return;
 }
 
 //显示枪机图像——v1.3
 void MainWindow::showGunSlot()
 {
+
+    mutex2.lock();
+    gun=gunImg.clone();
+    mutex2.unlock();
+    cv::resize(gun,gun,Size(lwidth/2,lheight/2),0,0,INTER_AREA);
     mutex4.lock();
-    gunshow=gunImage.copy();
+    gunImage=Mat2QImage(gun);
     mutex4.unlock();
-    ui->gunWindowLabel->setPixmap(QPixmap::fromImage(gunshow));//在界面上显示
+    ui->gunWindowLabel->setPixmap(QPixmap::fromImage(gunImage));//在界面上显示
+
     return;
 }
 
@@ -607,7 +586,8 @@ void MainWindow::clear2Slot()
 
 //Mat转QImage类的函数——v1.0
 //移动到ImgPro类中——v1.1
-QImage ImgPro::Mat2QImage(const cv::Mat& mat)
+//移回到MainWindow类中——v1.2
+QImage MainWindow::Mat2QImage(const cv::Mat& mat)
 {
     // 8-bits unsigned, NO. OF CHANNELS = 1
     if(mat.type() == CV_8UC1)
@@ -665,7 +645,7 @@ void ImgPro::readBallSlot()
             mutex1.lock();//互斥锁
             if(!ballCap->read(ballImg))
                 break;
-            emit getBall();
+            //emit getBall();
             mutex1.unlock();
             waitKey(1000/ballRate);
             //mutex01.unlock();
@@ -684,7 +664,7 @@ void ImgPro::readGunSlot()
             mutex2.lock();
             if(!gunCap->read(gunImg))
                 break;
-            emit getGun();
+            // emit getGun();
             mutex2.unlock();
             waitKey(1000/gunRate);
             //mutex02.unlock();
@@ -709,7 +689,7 @@ void ImgPro::getBallImageSlot()
     mutex1.unlock();//解锁
     cv::resize(ball,ball,Size(lwidth,lheight),0,0,INTER_AREA);
     mutex3.lock();
-    ballImage=Mat2QImage(ball);
+    // ballImage=Mat2QImage(ball);
     mutex3.unlock();
 
     //qDebug()<<"ERROR: Can't open the camera";
@@ -732,7 +712,7 @@ void ImgPro::getGunImageSlot()
     mutex2.unlock();
     cv::resize(gun,gun,Size(lwidth/2,lheight/2),0,0,INTER_AREA);
     mutex4.lock();
-    gunImage=Mat2QImage(gun);
+    // gunImage=Mat2QImage(gun);
     mutex4.unlock();
 
     //qDebug()<<"ERROR: Can't open the camera";
@@ -818,15 +798,11 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         if(point.x()>=0 && point.x()<=lwidth/2 && point.y()>=0 && point.y()<=lheight)
         {
             //进行坐标到角度的变换
-<<<<<<< HEAD
-            vertical=0.2342*eventpoint.y() - 89.963;
-            horizon=-0.306*eventpoint.x() + 636.85;
-            zoom=128;
-=======
+
             vertical=0.2342*point.y()*2 - 86.963;
             horizon=-0.306*point.x()*2 + 636.85;
             zoom=50;
->>>>>>> d8809686aa21b34b69b51dc7af89f3ebc3879a9e
+
             if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_EXTPTZ_EXACTGOTO,horizon,vertical,zoom,FALSE,NULL))
             {
                 ui->statusBar->showMessage("Go to Point Fail!",2000);
