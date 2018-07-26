@@ -38,89 +38,76 @@
     <property name="title">
      <string>Camera</string>
     </property>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QLabel" name="ballWindowLabel">
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>20</y>
-       <width>801</width>
-       <height>629</height>
+       <y>40</y>
+       <width>800</width>
+       <height>600</height>
       </rect>
      </property>
-     <property name="whatsThis">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;tab&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 255, 255);</string>
      </property>
-     <property name="currentIndex">
-      <number>0</number>
+     <property name="text">
+      <string/>
      </property>
-     <widget class="QWidget" name="ballTab">
-      <attribute name="title">
-       <string>BallCamera</string>
-      </attribute>
-      <widget class="QLabel" name="ballWindowLabel">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>800</width>
-         <height>600</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(255, 255, 255);</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-      <widget class="Line" name="line">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>290</y>
-         <width>800</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-      <widget class="Line" name="line_2">
-       <property name="geometry">
-        <rect>
-         <x>390</x>
-         <y>0</y>
-         <width>20</width>
-         <height>600</height>
-        </rect>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="gunTab">
-      <attribute name="title">
-       <string>GunCamera</string>
-      </attribute>
-      <widget class="QLabel" name="gunWindowLabel">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>801</width>
-         <height>581</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(255, 255, 255);</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </widget>
+    </widget>
+    <widget class="Line" name="line_2">
+     <property name="geometry">
+      <rect>
+       <x>410</x>
+       <y>40</y>
+       <width>20</width>
+       <height>600</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+    <widget class="Line" name="line">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>330</y>
+       <width>800</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="gunWindowLabel">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>39</y>
+       <width>400</width>
+       <height>300</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox">
+     <property name="geometry">
+      <rect>
+       <x>770</x>
+       <y>20</y>
+       <width>81</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>GUN</string>
+     </property>
     </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_2">
@@ -472,7 +459,7 @@
      <x>0</x>
      <y>0</y>
      <width>1162</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>
