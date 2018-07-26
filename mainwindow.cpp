@@ -140,6 +140,18 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+<<<<<<< HEAD
+=======
+/*//打开摄像头——v1.0
+//更改为登录loginSlot——v1.2
+void MainWindow::startCameraSlot()
+{
+    cap->open("rtsp://admin:123456@192.168.73.110:36955/cam/realmonitor?channel=1&subtype=0");//连接摄像头
+    emit startCamera();//发射一个摄像头开启信号
+    timer->start(1);//开启定时器
+    ui->statusBar->showMessage("Login!", 5000);//状态栏显示
+}*/
+>>>>>>> a8a573676f543f28c1aed5776e3fbf2a7b2ca538
 //登陆函数——v1.2
 void MainWindow::loginSlot()
 {
@@ -195,6 +207,7 @@ void MainWindow::loginSlot()
         ui->zoomLineEdit->setText(QString::number(zoom,10));
     }
 }
+
 //登出函数——v1.2
 void MainWindow::logoutSlot()
 {
@@ -224,6 +237,28 @@ void MainWindow::logoutSlot()
     ui->statusBar->showMessage("Logout!",2000);
 }
 
+<<<<<<< HEAD
+=======
+/*//在界面上显示图像——v1.0
+//由于会影响速度，所以将其通过QThread移动至其他线程后台处理——v1.1
+void MainWindow::getFrameSlot()
+{
+    if(cap->isOpened())//如果连接成功
+    {
+        cap->read(img);//读一帧
+        cv::resize(img,img,Size(800,590),0,0,INTER_AREA);
+        image=Mat2QImage(img);//转换为QImage类
+        ui->showWindowLabel->setPixmap(QPixmap::fromImage(image));//在界面上显示
+    }
+    else//如果连接失败
+    {
+        qDebug()<<"ERROR: Can't open the camera";
+        return;
+    }
+}
+*/
+
+>>>>>>> a8a573676f543f28c1aed5776e3fbf2a7b2ca538
 //显示图像——v1.1
 void MainWindow::showBallSlot()
 {
@@ -233,6 +268,7 @@ void MainWindow::showBallSlot()
     ui->ballWindowLabel->setPixmap(QPixmap::fromImage(ballshow));//在界面上显示
     return;
 }
+
 //显示枪机图像——v1.3
 void MainWindow::showGunSlot()
 {
@@ -274,17 +310,20 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 //控制摄像头移动——v1.2
 int verticalSpeed,horizontalSpeed;
+
 //垂直速度和水平速度——v1.2
 void MainWindow::verticalSpeedSlot()
 {
     verticalSpeed=ui->verticalSpeedSlider->value();
     ui->statusBar->showMessage("Vertical speed changed!",3000);
 }
+
 void MainWindow::horizontalSpeedSlot()
 {
     horizontalSpeed=ui->horizontalSpeedSlider->value();
     ui->statusBar->showMessage("Horizontal speed changed!",3000);
 }
+
 //上下左右的启动和停止——v1.2
 void MainWindow::upSlot()
 {
@@ -301,6 +340,7 @@ void MainWindow::upSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::downSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_DOWN_CONTROL,0,verticalSpeed,0,FALSE,NULL))
@@ -316,6 +356,7 @@ void MainWindow::downSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::leftSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_LEFT_CONTROL,0,horizontalSpeed,0,FALSE,NULL))
@@ -331,6 +372,7 @@ void MainWindow::leftSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::rightSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_RIGHT_CONTROL,0,horizontalSpeed,0,FALSE,NULL))
@@ -346,6 +388,7 @@ void MainWindow::rightSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::upStopSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_UP_CONTROL,0,verticalSpeed,0,TRUE,NULL))
@@ -361,6 +404,7 @@ void MainWindow::upStopSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::downStopSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_DOWN_CONTROL,0,verticalSpeed,0,TRUE,NULL))
@@ -376,6 +420,7 @@ void MainWindow::downStopSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::leftStopSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_LEFT_CONTROL,0,horizontalSpeed,0,TRUE,NULL))
@@ -391,6 +436,7 @@ void MainWindow::leftStopSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::rightStopSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_RIGHT_CONTROL,0,horizontalSpeed,0,TRUE,NULL))
@@ -415,6 +461,7 @@ void MainWindow::zoomSpeedSlot()
     zoomSpeed=ui->zoomSpeedSlider->value();
     ui->statusBar->showMessage("Zoom speed changed!",3000);
 }
+
 //变倍的启动和停止——v1.4
 void MainWindow::plusSlot()
 {
@@ -431,6 +478,7 @@ void MainWindow::plusSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::minusSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_ZOOM_DEC_CONTROL,0,zoomSpeed,0,FALSE,NULL))
@@ -446,6 +494,7 @@ void MainWindow::minusSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::plusStopSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_ZOOM_ADD_CONTROL,0,zoomSpeed,0,TRUE,NULL))
@@ -461,6 +510,7 @@ void MainWindow::plusStopSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::minusStopSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_ZOOM_DEC_CONTROL,0,zoomSpeed,0,TRUE,NULL))
@@ -493,6 +543,7 @@ void MainWindow::resetSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 //精确定位
 void MainWindow::goSlot()
 {
@@ -508,12 +559,14 @@ void MainWindow::goSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 //清空对话框
 void MainWindow::clearSlot()
 {
     ui->verticalLineEdit->clear();
     ui->horizontalLineEdit->clear();
 }
+
 //变倍复位
 void MainWindow::rezoomSlot()
 {
@@ -528,6 +581,7 @@ void MainWindow::rezoomSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 //控制变倍
 void MainWindow::zoomSlot()
 {
@@ -542,6 +596,7 @@ void MainWindow::zoomSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 //清空对话框2
 void MainWindow::clear2Slot()
 {
@@ -618,6 +673,7 @@ void ImgPro::readBallSlot()
     }
     return;
 }
+
 void ImgPro::readGunSlot()
 {
     while(GUN)
@@ -659,6 +715,7 @@ void ImgPro::getBallImageSlot()
     //qDebug()<<"ERROR: Can't open the camera";
     return;
 }
+
 //后台循环处理得到gunImage图像——v1.3
 void ImgPro::getGunImageSlot()
 {
