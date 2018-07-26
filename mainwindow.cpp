@@ -161,7 +161,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ImgPro *imgpro5 = new ImgPro;
     imgpro5->moveToThread(&imgtracker);
     imgtracker.start();
-    QObject::connect(timer1,SIGNAL(timeout()),imgpro5,SLOT(ballTrackSlot()));
+    QObject::connect(this,SIGNAL(startBallTrack()),imgpro5,SLOT(ballTrackSlot()));
 }
 
 MainWindow::~MainWindow()
@@ -248,6 +248,7 @@ void MainWindow::logoutSlot()
     //imgproThread4.quit();
     //imgproThread4.exit();
     //imgproThread4.wait();
+    isinit=false;
     imgtracker.quit();
     CLIENT_Logout(lLoginHandle);
     CLIENT_Cleanup();
@@ -309,6 +310,8 @@ void MainWindow::showBallSlot()
         ball=ballTrack.clone();//复制一个mat用于处理
         mutex5.unlock();//解锁
         //cv::resize(ball,ball,Size(lwidth,lheight),0,0,INTER_AREA);
+        //tracker->update(ball, box);
+        //rectangle(ball, box, Scalar(255, 0, 0), 2, 1);
 
         ballImage=MainWindow::Mat2QImage(ball);
         ui->ballWindowLabel->setPixmap(QPixmap::fromImage(ballImage));
@@ -616,43 +619,13 @@ void MainWindow::clear2Slot()
 //移动到ImgPro类中——v1.1
 QImage MainWindow::Mat2QImage(const cv::Mat& mat)
 {
-    // 8-bits unsigned, NO. OF CHANNELS = 1
-    if(mat.type() == CV_8UC1)
-    {
-        QImage image(mat.cols, mat.rows, QImage::Format_Indexed8);
-        // Set the color table (used to translate colour indexes to qRgb values)
-        image.setColorCount(256);
-        for(int i = 0; i < 256; i++)
-        {
-            image.setColor(i, qRgb(i, i, i));
-        }
-        // Copy input Mat
-        uchar *pSrc = mat.data;
-        for(int row = 0; row < mat.rows; row ++)
-        {
-            uchar *pDest = image.scanLine(row);
-            memcpy(pDest, pSrc, mat.cols);
-            pSrc += mat.step;
-        }
-        return image;
-    }
-    // 8-bits unsigned, NO. OF CHANNELS = 3
-    else if(mat.type() == CV_8UC3)
+    if(mat.type() == CV_8UC3)
     {
         // Copy input Mat
         const uchar *pSrc = (const uchar*)mat.data;
         // Create QImage with same dimensions as input Mat
         QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
         return image.rgbSwapped();
-    }
-    else if(mat.type() == CV_8UC4)
-    {
-        qDebug() << "CV_8UC4";
-        // Copy input Mat
-        const uchar *pSrc = (const uchar*)mat.data;
-        // Create QImage with same dimensions as input Mat
-        QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_ARGB32);
-        return image.copy();
     }
     else
     {
@@ -873,7 +846,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
     tracker = TrackerKCF::create();//清空
     isinit=tracker->init(ballTrack, box);
     //mutex3.unlock();
-    //emit startBallTrack();
+    emit startBallTrack();
 }
 
 //隐藏枪机画面——v1.10
@@ -932,7 +905,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 void ImgPro::ballTrackSlot()
 {
-    if(isinit)
+    while(isinit)//循环处理防止跟丢，而不是定时处理
     {
         mutex5.lock();//锁住ballTrack
         mutex3.lock();//锁住ballTrackImg

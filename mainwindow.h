@@ -65,7 +65,7 @@ signals:
 
     //void paintBall();
 
-    //void startBallTrack();
+    void startBallTrack();
 
 private slots:
     void loginSlot();//——v1.2
