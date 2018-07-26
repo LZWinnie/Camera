@@ -12,7 +12,7 @@ QImage ballImage,gunImage;
 //QList<QImage> *list=new QList<QImage>;
 
 //预设登录信息——v1.2
-char szDevIp[64] = {"192.168.73.110"};
+char szDevIp[64] = {"lab.zhuzhuguowang.cn"};
 NET_DEVICEINFO stDevInfo = {0};
 int nError = 0;
 int nPort = 36956;
@@ -35,7 +35,7 @@ QImage ballshow,gunshow;
 Mat ball,gun;
 
 //互斥锁——v1.6
-QMutex mutex1,mutex2,mutex3,mutex4;
+QMutex mutex1,mutex2,mutex3,mutex4,mutex5;
 QMutex mutex01,mutex02;
 
 //线程循环控制变量——v1.8
@@ -48,7 +48,8 @@ int lheight=600;
 //目标追踪——v2.0
 Ptr<Tracker> tracker = TrackerKCF::create();
 Rect2d box;
-Mat ballTrack;
+Mat ballTrack,ballTrackImg;
+bool isinit=false;
 
 //画框——v2.0
 bool mouseispressed=false;
@@ -180,8 +181,8 @@ void MainWindow::loginSlot()
     {
         ui->statusBar->showMessage("Login Success!",1000);
 
-        ballCap->open("rtsp://admin:123456@192.168.73.110:36955/cam/realmonitor?channel=1&subtype=0");//连接摄像头
-        gunCap->open("rtsp://admin:123456@192.168.73.110:36958/cam/realmonitor?channel=1&subtype=0");//连接枪机摄像头
+        ballCap->open("rtsp://admin:123456@lab.zhuzhuguowang.cn:36955/cam/realmonitor?channel=1&subtype=0");//连接摄像头
+        gunCap->open("rtsp://admin:123456@lab.zhuzhuguowang.cn:36958/cam/realmonitor?channel=1&subtype=0");//连接枪机摄像头
         BALL=true;
         GUN=true;
         emit startBallCamera();//发射一个摄像头开启信号
@@ -241,12 +242,13 @@ void MainWindow::logoutSlot()
     imgproThread2.quit();
     //imgproThread2.wait();
     timer2->stop();//退出登录
-    imgproThread3.quit();
+    //imgproThread3.quit();
     imgproThread3.exit();
     //imgproThread3.wait();
-    imgproThread4.quit();
-    imgproThread4.exit();
+    //imgproThread4.quit();
+    //imgproThread4.exit();
     //imgproThread4.wait();
+    imgtracker.quit();
     CLIENT_Logout(lLoginHandle);
     CLIENT_Cleanup();
     ui->statusBar->showMessage("Logout!",2000);
@@ -267,7 +269,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         imgproThread2.quit();//退出线程
         qDebug()<<"Thread2 is running!";
     }
-    if(imgproThread3.isRunning())
+    /*if(imgproThread3.isRunning())
     {
         imgproThread3.quit();//退出线程
         qDebug()<<"Thread3 is running!";
@@ -276,6 +278,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         imgproThread4.quit();//退出线程
         qDebug()<<"Thread4 is running!";
+    }*/
+    if(imgtracker.isRunning())
+    {
+        imgtracker.quit();
+        qDebug()<<"imgtracker is running!";
     }
     //目前的情况是所有的线程都没有被停止，所以会报错Runtime XXX，但是不会意外停止了
     event->accept();//接收事件
@@ -298,10 +305,10 @@ void MainWindow::showBallSlot()
     }
     else
     {
-        mutex3.lock();//互斥锁
+        mutex5.lock();//互斥锁
         ball=ballTrack.clone();//复制一个mat用于处理
-        mutex3.unlock();//解锁
-        cv::resize(ball,ball,Size(lwidth,lheight),0,0,INTER_AREA);
+        mutex5.unlock();//解锁
+        //cv::resize(ball,ball,Size(lwidth,lheight),0,0,INTER_AREA);
 
         ballImage=MainWindow::Mat2QImage(ball);
         ui->ballWindowLabel->setPixmap(QPixmap::fromImage(ballImage));
@@ -667,6 +674,9 @@ void ImgPro::readBallSlot()
                 break;
             emit getBall();
             mutex1.unlock();
+            mutex3.lock();
+            ballTrackImg=ballImg.clone();//追踪用原图
+            mutex3.unlock();
             waitKey(1000/ballRate);
             //mutex01.unlock();
         }
@@ -854,13 +864,14 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
     box=Rect2d(beginp.x(),beginp.y(),endp.x()-beginp.x(),endp.y()-beginp.y());
 
     //mutex3.lock();
-    mutex1.lock();
-    ballTrack=ballImg.clone();
-    mutex1.unlock();
+    mutex3.lock();
+    ballTrack=ballTrackImg.clone();
+    mutex3.unlock();
 
     cv::resize(ballTrack,ballTrack,Size(lwidth,lheight),0,0,INTER_AREA);
     rectangle(ballTrack, box, Scalar(0, 255, 0), 2, 1);
-    tracker->init(ballTrack, box);
+    tracker = TrackerKCF::create();//清空
+    isinit=tracker->init(ballTrack, box);
     //mutex3.unlock();
     //emit startBallTrack();
 }
@@ -898,6 +909,7 @@ void ImgPro::paintBallSlot()
 void MainWindow::ballSelectSlot()
 {
     this->setMouseTracking(true);
+    isinit=false;
 }
 
 /*//这个也凉了——QPixmap: Must construct a QGuiApplication before a QPixmap
@@ -920,13 +932,16 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 void ImgPro::ballTrackSlot()
 {
-    //mutex3.lock();
-    mutex1.lock();
-    ballTrack=ballImg.clone();
-    mutex1.unlock();
+    if(isinit)
+    {
+        mutex5.lock();//锁住ballTrack
+        mutex3.lock();//锁住ballTrackImg
+        ballTrack=ballTrackImg.clone();
+        mutex3.unlock();
 
-    cv::resize(ballTrack,ballTrack,Size(lwidth,lheight),0,0,INTER_AREA);
-    tracker->update(ballTrack, box);
-    rectangle(ballTrack, box, Scalar(255, 0, 0), 2, 1);
-    //mutex3.unlock();
+        cv::resize(ballTrack,ballTrack,Size(lwidth,lheight),0,0,INTER_AREA);
+        tracker->update(ballTrack, box);
+        rectangle(ballTrack, box, Scalar(255, 0, 0), 2, 1);
+        mutex5.unlock();
+    }
 }
