@@ -65,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
     imgpro1->moveToThread(&imgproThread1);
     imgproThread1.start();
     QObject::connect(this,SIGNAL(startBallCamera()),imgpro1,SLOT(readBallSlot()));
+
     ImgPro *imgpro2 = new ImgPro;
     imgpro2->moveToThread(&imgproThread2);
     imgproThread2.start();
@@ -76,23 +77,19 @@ MainWindow::MainWindow(QWidget *parent) :
     imgproThread3.start();//启动线程——v1.1
     //QObject::connect(this,SIGNAL(startBallCamera()),imgpro1,SLOT(getBallImageSlot()));//——v1.1
     QObject::connect(imgpro1,SIGNAL(getBall()),imgpro3,SLOT(getBallImageSlot()));
+
     ImgPro *imgpro4 = new ImgPro;
     imgpro4->moveToThread(&imgproThread4);// 调用moveToThread将该任务交割imgproThread——v1.1
     imgproThread4.start();//启动线程——v1.1
     //QObject::connect(this,SIGNAL(startGunCamera()),imgpro2,SLOT(getGunImageSlot()));//——v1.1
     QObject::connect(imgpro2,SIGNAL(getGun()),imgpro4,SLOT(getGunImageSlot()));
 
-    /*//定时器控制处理，发射一个信号驱动现实——v1.6
-    QObject::connect(timer1,SIGNAL(timeout()),imgpro1,SLOT(getBallImageSlot()));
-    QObject::connect(timer2,SIGNAL(timeout()),imgpro2,SLOT(getGunImageSlot()));
-    QObject::connect(imgpro1,SIGNAL(showball()),this,SLOT(showBallSlot()));
-    QObject::connect(imgpro2,SIGNAL(showgun()),this,SLOT(showGunSlot()));*/
-
     //窗口和状态栏——v1.5
     MainWindow::setWindowTitle("Camera  Control  System");
     QLabel *copyright = new QLabel(this);
     copyright->setText("Copyright   ©   LAB   369");
     ui->statusBar->addPermanentWidget(copyright);
+
     //速度滑块设置——v1.2
     ui->verticalSpeedSlider->setMaximum(8);
     ui->verticalSpeedSlider->setMinimum(0);
@@ -103,6 +100,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //速度控制——v1.2
     QObject::connect(ui->verticalSpeedSlider,SIGNAL(valueChanged(int)),this,SLOT(verticalSpeedSlot()));
     QObject::connect(ui->horizontalSpeedSlider,SIGNAL(valueChanged(int)),this,SLOT(horizontalSpeedSlot()));
+
     //云台控制——v1.2
     QObject::connect(ui->upButton,SIGNAL(pressed()),this,SLOT(upSlot()));
     QObject::connect(ui->downButton,SIGNAL(pressed()),this,SLOT(downSlot()));
@@ -112,16 +110,19 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->downButton,SIGNAL(released()),this,SLOT(downStopSlot()));
     QObject::connect(ui->leftButton,SIGNAL(released()),this,SLOT(leftStopSlot()));
     QObject::connect(ui->rightButton,SIGNAL(released()),this,SLOT(rightStopSlot()));
+
     //变倍滑块设置——v1.4
     ui->zoomSpeedSlider->setMaximum(1);
     ui->zoomSpeedSlider->setMinimum(0);
     ui->zoomSpeedSlider->setTickPosition(QSlider::TicksAbove);
     QObject::connect(ui->zoomSpeedSlider,SIGNAL(valueChanged(int)),this,SLOT(zoomSpeedSlot()));
+
     //变倍控制——v1.4
     QObject::connect(ui->plusButton,SIGNAL(pressed()),this,SLOT(plusSlot()));
     QObject::connect(ui->minusButton,SIGNAL(pressed()),this,SLOT(minusSlot()));
     QObject::connect(ui->plusButton,SIGNAL(released()),this,SLOT(plusStopSlot()));
     QObject::connect(ui->minusButton,SIGNAL(released()),this,SLOT(minusStopSlot()));
+
     //控制坐标移动——v1.5
     QObject::connect(ui->resetButton,SIGNAL(clicked()),this,SLOT(resetSlot()));
     QObject::connect(ui->goButton,SIGNAL(clicked()),this,SLOT(goSlot()));
@@ -130,26 +131,15 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->zoomButton,SIGNAL(clicked()),this,SLOT(zoomSlot()));
     QObject::connect(ui->clearButton2,SIGNAL(clicked()),this,SLOT(clear2Slot()));
 
-    //获得图片大小——v1.7_——会卡死
-    //QObject::connect(this,SIGNAL(startBallCamera()),this,SLOT(getSizeSlot()));
-
-    //标签页切换——v1.8
-    QObject::connect(ui->tabWidget,SIGNAL(tabBarClicked(int)),this,SLOT(tabChangeSlot()));
+    //控制GUN窗口隐藏——v1.10
+    QObject::connect(ui->checkBox,SIGNAL(stateChanged(int)),this,SLOT(gunVisibleSlot()));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-/*//打开摄像头——v1.0
-//更改为登录loginSlot——v1.2
-void MainWindow::startCameraSlot()
-{
-    cap->open("rtsp://admin:123456@192.168.73.110:36955/cam/realmonitor?channel=1&subtype=0");//连接摄像头
-    emit startCamera();//发射一个摄像头开启信号
-    timer->start(1);//开启定时器
-    ui->statusBar->showMessage("Login!", 5000);//状态栏显示
-}*/
+
 //登陆函数——v1.2
 void MainWindow::loginSlot()
 {
@@ -161,19 +151,18 @@ void MainWindow::loginSlot()
     else  // 登录成功
     {
         ui->statusBar->showMessage("Login Success!",1000);
-        ui->tabWidget->setCurrentIndex(0);//首先显示球机窗口
+
         ballCap->open("rtsp://admin:123456@lab.zhuzhuguowang.cn:36955/cam/realmonitor?channel=1&subtype=0");//连接摄像头
         gunCap->open("rtsp://admin:123456@lab.zhuzhuguowang.cn:36958/cam/realmonitor?channel=1&subtype=0");//连接枪机摄像头
         BALL=true;
-        GUN=false;
+        GUN=true;
         emit startBallCamera();//发射一个摄像头开启信号
-        //mutex02.lock();
-        //emit startGunCamera();//发射一个枪机摄像头开启信号
-        //ballRate=ballCap->get(CV_CAP_PROP_FPS);
-        //gunRate=gunCap->get(CV_CAP_PROP_FPS);
-        //qDebug()<<gunRate;
+        emit startGunCamera();//发射一个枪机摄像头开启信号
         timer1->start(1000/ballRate);//开启定时器
         timer2->start(1000/gunRate);//开启定时器
+        ui->checkBox->setChecked(true);//初始GUN选中，显示GUN窗口
+        ui->gunWindowLabel->setVisible(true);
+
         char szBuffer[2048] = "";
         int nError = 0;
         char p[]="ptz.getCurrentProtocolCaps";//将const char*转换为char*，否则下面的函数会报错
@@ -185,6 +174,7 @@ void MainWindow::loginSlot()
             return;
         }
         //ui->statusBar->showMessage("CLIENT_QueryNewSystemInfo Success!",5000);
+
         CFG_PTZ_PROTOCOL_CAPS_INFO stuPtzCapsInfo = {sizeof(CFG_PTZ_PROTOCOL_CAPS_INFO)};
         if (FALSE==CLIENT_ParseData(p, szBuffer, &stuPtzCapsInfo, sizeof(stuPtzCapsInfo), NULL))
         {
@@ -194,6 +184,7 @@ void MainWindow::loginSlot()
             return;
         }
         //ui->statusBar->showMessage("CLIENT_ParseData Success!",1000);
+
         //显示当前坐标和变倍——v1.5
         CLIENT_QueryDevState(lLoginHandle,DH_DEVSTATE_PTZ_LOCATION,(char *)&status,sizeof(status),&statuslen,3000);
         vertical=status.nPTZTilt;
@@ -223,32 +214,16 @@ void MainWindow::logoutSlot()
     //imgproThread2.wait();
     timer2->stop();//退出登录
     imgproThread3.quit();
+    imgproThread3.exit();
     //imgproThread3.wait();
     imgproThread4.quit();
+    imgproThread4.exit();
     //imgproThread4.wait();
     CLIENT_Logout(lLoginHandle);
     CLIENT_Cleanup();
     ui->statusBar->showMessage("Logout!",2000);
 }
 
-/*//在界面上显示图像——v1.0
-//由于会影响速度，所以将其通过QThread移动至其他线程后台处理——v1.1
-void MainWindow::getFrameSlot()
-{
-    if(cap->isOpened())//如果连接成功
-    {
-        cap->read(img);//读一帧
-        cv::resize(img,img,Size(800,590),0,0,INTER_AREA);
-        image=Mat2QImage(img);//转换为QImage类
-        ui->showWindowLabel->setPixmap(QPixmap::fromImage(image));//在界面上显示
-    }
-    else//如果连接失败
-    {
-        qDebug()<<"ERROR: Can't open the camera";
-        return;
-    }
-}
-*/
 //显示图像——v1.1
 void MainWindow::showBallSlot()
 {
@@ -573,18 +548,8 @@ void MainWindow::clear2Slot()
     ui->zoomLineEdit->clear();
 }
 
-/*//获得窗口大小——v1.7会卡死还是算了
-void MainWindow::getSizeSlot()
-{
-    while(lLoginHandle)
-    {
-        lwidth=ui->ballWindowLabel->width();
-        lheight=ui->ballWindowLabel->height();
-    }
-    return;
-}*/
-
 /*************************************************************************************/
+
 //Mat转QImage类的函数——v1.0
 //移动到ImgPro类中——v1.1
 QImage ImgPro::Mat2QImage(const cv::Mat& mat)
@@ -708,7 +673,7 @@ void ImgPro::getGunImageSlot()
     mutex2.lock();
     gun=gunImg.clone();
     mutex2.unlock();
-    cv::resize(gun,gun,Size(lwidth,lheight),0,0,INTER_AREA);
+    cv::resize(gun,gun,Size(lwidth/2,lheight/2),0,0,INTER_AREA);
     mutex4.lock();
     gunImage=Mat2QImage(gun);
     mutex4.unlock();
@@ -718,71 +683,19 @@ void ImgPro::getGunImageSlot()
 }
 
 /*************************************************************************************/
+
 //右键显示坐标——v1.8
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
-    if(ui->tabWidget->currentIndex())
+    QMenu *menu=new QMenu(this);
+    QAction *action=new QAction(this);
+    QPoint point = event->globalPos();
+    point = ui->gunWindowLabel->mapFromGlobal(point);
+    if(point.x()>=0 && point.x()<=200 && point.y()>=0 && point.y()<=150)
     {
-        QMenu *menu=new QMenu(this);
-        QAction *action=new QAction(this);
-        QPoint eventpoint = event->globalPos();
-        eventpoint = ui->gunWindowLabel->mapFromGlobal(eventpoint);
-        action->setText("x="+QString::number(eventpoint.x())+"\ty="+QString::number(eventpoint.y()));
+        action->setText("x="+QString::number(point.x())+"\ty="+QString::number(point.y()));
         menu->addAction(action);
         menu->exec(QCursor::pos());
-    }
-}
-
-//切换标签使按键无效——v1.8
-void MainWindow::tabChangeSlot()
-{
-    switch (ui->tabWidget->currentIndex()) {
-    case 1://ball
-        //qDebug()<<"Case 1:Tab:"+QString::number(ui->tabWidget->currentIndex());
-        ui->groupBox_3->setEnabled(true);
-        ui->groupBox_4->setEnabled(true);
-        ui->groupBox_5->setEnabled(true);
-
-        //ballCap->open("rtsp://admin:123456@lab.zhuzhuguowang.cn:36955/cam/realmonitor?channel=1&subtype=0");//连接摄像头
-        //mutex1.unlock();
-        //mutex3.unlock();
-        BALL=true;
-        emit startBallCamera();//发射一个摄像头开启信号
-        timer1->start(1000/ballRate);//开启定时器
-        //mutex01.unlock();
-
-        //while(!mutex2.tryLock());
-        //while(!mutex4.tryLock());
-        //gunCap->release();//释放cap以便于停止线程
-        //mutex02.lock();//锁住gun的变量使gun暂停
-        GUN=false;
-        timer2->stop();
-
-        break;
-    case 0://gun
-        //qDebug()<<"Case 0:Tab:"+QString::number(ui->tabWidget->currentIndex());
-        ui->groupBox_3->setEnabled(false);
-        ui->groupBox_4->setEnabled(false);
-        ui->groupBox_5->setEnabled(false);
-
-        //gunCap->open("rtsp://admin:123456@lab.zhuzhuguowang.cn:36958/cam/realmonitor?channel=1&subtype=0");//连接枪机摄像头
-        //mutex2.unlock();
-        //mutex4.unlock();
-        GUN=true;
-        emit startGunCamera();//发射一个枪机摄像头开启信号
-        timer2->start(1000/gunRate);//开启定时器
-        //mutex02.unlock();
-
-        //while(!mutex1.tryLock());
-        //while(!mutex3.tryLock());
-        //ballCap->release();//释放cap以便于停止线程
-        //mutex01.lock();
-        BALL=false;
-        timer1->stop();
-
-        break;
-    default:
-        break;
     }
 }
 
@@ -795,13 +708,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
     case Qt::Key_W: CLIENT_DHPTZControlEx2(lLoginHandle, 0, DH_PTZ_UP_CONTROL, 0, verticalSpeed, 0, FALSE, NULL);
                     break;
-
     case Qt::Key_S: CLIENT_DHPTZControlEx2(lLoginHandle, 0, DH_PTZ_DOWN_CONTROL, 0, verticalSpeed, 0, FALSE, NULL);
                     break;
-
     case Qt::Key_A: CLIENT_DHPTZControlEx2(lLoginHandle, 0, DH_PTZ_LEFT_CONTROL, 0, horizontalSpeed, 0, FALSE, NULL);
                     break;
-
     case Qt::Key_D: CLIENT_DHPTZControlEx2(lLoginHandle, 0, DH_PTZ_RIGHT_CONTROL, 0, horizontalSpeed, 0, FALSE, NULL);
                     break;
     }
@@ -823,13 +733,10 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 
     case Qt::Key_W: CLIENT_DHPTZControlEx2(lLoginHandle, 0, DH_PTZ_UP_CONTROL, 0, verticalSpeed, 0, TRUE, NULL);
                     break;
-
     case Qt::Key_S: CLIENT_DHPTZControlEx2(lLoginHandle, 0, DH_PTZ_DOWN_CONTROL, 0, verticalSpeed, 0, TRUE, NULL);
                     break;
-
     case Qt::Key_A: CLIENT_DHPTZControlEx2(lLoginHandle, 0, DH_PTZ_LEFT_CONTROL, 0, horizontalSpeed, 0, TRUE, NULL);
                     break;
-
     case Qt::Key_D: CLIENT_DHPTZControlEx2(lLoginHandle, 0, DH_PTZ_RIGHT_CONTROL, 0, horizontalSpeed, 0, TRUE, NULL);
                     break;
     }
@@ -846,20 +753,20 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 //枪球联动——v1.9
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
-    if(ui->tabWidget->currentIndex())
+    if(event->button() == Qt::LeftButton)
     {
-        if(event->button() == Qt::LeftButton)
+        //获得坐标
+        QPoint point = event->globalPos();
+        point = ui->gunWindowLabel->mapFromGlobal(point);
+        if(point.x()>=0 && point.x()<=lwidth/2 && point.y()>=0 && point.y()<=lheight)
         {
-            //获得坐标
-            QPoint eventpoint = event->globalPos();
-            eventpoint = ui->gunWindowLabel->mapFromGlobal(eventpoint);
             //进行坐标到角度的变换
-            vertical=0.239*eventpoint.y() + 49.653;
-            horizon=-0.3101*eventpoint.x() + 634.28;
-            zoom=128;
+            vertical=0.2342*point.y()*2 - 86.963;
+            horizon=-0.306*point.x()*2 + 636.85;
+            zoom=50;
             if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_EXTPTZ_EXACTGOTO,horizon,vertical,zoom,FALSE,NULL))
             {
-                ui->statusBar->showMessage("Go Fail!",2000);
+                ui->statusBar->showMessage("Go to Point Fail!",2000);
             }
             //显示当前坐标和变倍——v1.5
             CLIENT_QueryDevState(lLoginHandle,DH_DEVSTATE_PTZ_LOCATION,(char *)&status,sizeof(status),&statuslen,3000);
@@ -867,5 +774,18 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             ui->horizontalLineEdit->setText(QString::number(horizon,10));
             ui->zoomLineEdit->setText(QString::number(zoom,10));
         }
+    }
+}
+
+//隐藏枪机画面——v1.10
+void MainWindow::gunVisibleSlot()
+{
+    if(ui->checkBox->isChecked())
+    {
+        ui->gunWindowLabel->setVisible(true);
+    }
+    else
+    {
+        ui->gunWindowLabel->setVisible(false);
     }
 }

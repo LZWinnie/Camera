@@ -39,7 +39,6 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    //QImage Mat2QImage(const cv::Mat& mat);//——v1.0
 
 protected:
     void closeEvent(QCloseEvent *);
@@ -49,9 +48,6 @@ signals:
     void startGunCamera();//——v1.3
 
 private slots:
-    //void startCameraSlot();//——v1.0
-    //void getFrameSlot();//——v1.0
-
     void loginSlot();//——v1.2
     void logoutSlot();//——v1.2
 
@@ -85,8 +81,7 @@ private slots:
     void rezoomSlot();
     void clear2Slot();
 
-    //void getSizeSlot();//——v1.7
-    void tabChangeSlot();//——v1.8
+    void gunVisibleSlot();//——v1.10
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event);//——v1.7
