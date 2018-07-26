@@ -23,6 +23,20 @@
 #include <QPoint>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <opencv2/tracking.hpp>
+#include <opencv2/tracking/tracker.hpp>
+#include <opencv2/core/ocl.hpp>
+#include <opencv2/core/utility.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
+#include <iostream>
+#include <cstring>
+#include <QPainter>
+#include <QRect>
+#include <QPaintDevice>
+
+#define KEY_DOWN(VK_NONAME) ((GetAsyncKeyState(VK_NONAME) & 0x8000) ? 1:0)
+#define SSTR( x ) static_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << x ) ).str();
 
 namespace Ui {
 class MainWindow;
@@ -33,20 +47,25 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     QThread imgproThread1;//用于后台读取——v1.6
     QThread imgproThread2;
+
     QThread imgproThread3;//用于后台处理——v1.1
     QThread imgproThread4;//用于后台处理枪机——v1.3
+
+    QThread imgRect;//用于画框
+    QThread imgtracker;//用于追踪处理
 
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     QImage Mat2QImage(const cv::Mat& mat);
 
-protected:
-    void closeEvent(QCloseEvent *);
-
 signals:
     void startBallCamera();//——v1.0
     void startGunCamera();//——v1.3
+
+    //void paintBall();
+
+    //void startBallTrack();
 
 private slots:
     void loginSlot();//——v1.2
@@ -84,17 +103,27 @@ private slots:
 
     void gunVisibleSlot();//——v1.10
 
+    void ballSelectSlot();
+
+
 protected:
-    void contextMenuEvent(QContextMenuEvent *event);//——v1.7
+    void closeEvent(QCloseEvent *);
 
-    void keyPressEvent(QKeyEvent *event);//——v1.9
-    void keyReleaseEvent(QKeyEvent *event);
+    void contextMenuEvent(QContextMenuEvent *);//——v1.7
 
-    void mousePressEvent(QMouseEvent *event);//——v1.9
+    void keyPressEvent(QKeyEvent *);//——v1.9
+    void keyReleaseEvent(QKeyEvent *);
+
+    void mousePressEvent(QMouseEvent *);//——v1.9
+    void mouseMoveEvent(QMouseEvent *);
+    void mouseReleaseEvent(QMouseEvent *);
+
+    //void paintEvent(QPaintEvent *);
 
 private:
     Ui::MainWindow *ui;
     QTimer *timer1,*timer2;
+    QPainter painter;
 
 };
 //为了多线程后台处理图片，定义一个新类——v1.1
@@ -114,8 +143,12 @@ signals:
 public slots:
     void readBallSlot();//——v1.6
     void readGunSlot();
-    void getBallImageSlot();//——v1.1
-    void getGunImageSlot();//——v1.3
+
+    //void getBallImageSlot();//——v1.1
+    //void getGunImageSlot();//——v1.3
+
+    //void paintBallSlot();
+    void ballTrackSlot();
 };
 
 #endif // MAINWINDOW_H
