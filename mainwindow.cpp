@@ -27,8 +27,8 @@ int horizon,vertical;
 int zoom;
 
 //帧率相关——v1.6
-double ballRate=10;
-double gunRate=10;
+double ballRate=25;
+double gunRate=30;
 
 //图像处理临时变量
 QImage ballshow,gunshow;
@@ -66,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     timer1 = new QTimer(this);
     timer2 = new QTimer(this);
+
     //QObject::connect(ui->loginButton,SIGNAL(clicked()),this,SLOT(startCameraSlot()));//——v1.0打开摄像头
     QObject::connect(ui->loginButton,SIGNAL(clicked()),this,SLOT(loginSlot()));//——v1.2
     QObject::connect(ui->logoutButton,SIGNAL(clicked()),this,SLOT(logoutSlot()));//——v1.2
@@ -73,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //QObject::connect(timer,SIGNAL(timeout()),this,SLOT(getFrameSlot()));//——v1.0
     QObject::connect(timer1,SIGNAL(timeout()),this,SLOT(showBallSlot()));//——v1.1
     QObject::connect(timer2,SIGNAL(timeout()),this,SLOT(showGunSlot()));//——v1.1
+
 
     //读取视频流进程——v1.6
     ImgPro *imgpro1 = new ImgPro;
@@ -101,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent) :
     */
 
     //窗口和状态栏——v1.5
-    MainWindow::setWindowTitle("Camera  Control  System ———— v1.2");
+    MainWindow::setWindowTitle("Camera  Control  System --- v1.2");
     QLabel *copyright = new QLabel(this);
     copyright->setText("Copyright   ©   LAB   369");
     ui->statusBar->addPermanentWidget(copyright);
@@ -325,6 +327,7 @@ void MainWindow::showGunSlot()
     mutex2.lock();
     gun=gunImg.clone();
     mutex2.unlock();
+
     cv::resize(gun,gun,Size(lwidth/2,lheight/2),0,0,INTER_AREA);
 
     gunImage=Mat2QImage(gun);
@@ -645,11 +648,14 @@ void ImgPro::readBallSlot()
             mutex1.lock();//互斥锁
             if(!ballCap->read(ballImg))
                 break;
-            emit getBall();
             mutex1.unlock();
+
+            emit getBall();
+
             mutex3.lock();
             ballTrackImg=ballImg.clone();//追踪用原图
             mutex3.unlock();
+
             waitKey(1000/ballRate);
             //mutex01.unlock();
         }
@@ -666,8 +672,10 @@ void ImgPro::readGunSlot()
             mutex2.lock();
             if(!gunCap->read(gunImg))
                 break;
-            emit getGun();
             mutex2.unlock();
+
+            emit getGun();
+
             waitKey(1000/gunRate);
             //mutex02.unlock();
         }
@@ -715,7 +723,7 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     QAction *action=new QAction(this);
     QPoint point = event->globalPos();
     point = ui->gunWindowLabel->mapFromGlobal(point);
-    if(point.x()>=0 && point.x()<=200 && point.y()>=0 && point.y()<=150)
+    if(point.x()>=0 && point.x()<=lwidth/2 && point.y()>=0 && point.y()<=lheight/2)
     {
         action->setText("x="+QString::number(point.x())+"\ty="+QString::number(point.y()));
         menu->addAction(action);
@@ -795,8 +803,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             if(point.x()>=0 && point.x()<=lwidth/2 && point.y()>=0 && point.y()<=lheight)
             {
                 //进行坐标到角度的变换
-                vertical=0.2342*point.y()*2 - 86.963;
-                horizon=-0.306*point.x()*2 + 636.85;
+                vertical=0.239*point.y()*2 + 49.653;
+                horizon=-0.3101*point.x()*2 + 634.28;
                 zoom=50;
                 if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_EXTPTZ_EXACTGOTO,horizon,vertical,zoom,FALSE,NULL))
                 {
