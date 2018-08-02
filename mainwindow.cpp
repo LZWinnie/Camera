@@ -27,8 +27,8 @@ int horizon,vertical;
 int zoom;
 
 //帧率相关——v1.6
-double ballRate=25;
-double gunRate=30;
+double ballRate=10;
+double gunRate=10;
 
 //图像处理临时变量
 QImage ballshow,gunshow;
@@ -299,7 +299,7 @@ void MainWindow::showBallSlot()
     if(ui->sourceComboBox->currentIndex()==0)
     {
         mutex1.lock();//互斥锁
-        ball=ballImg.clone();//复制一个mat用于处理
+        ball=ballImg.clone();//复制一个mat用于处理  // 如果这里不复制呢
         mutex1.unlock();//解锁
         cv::resize(ball,ball,Size(lwidth,lheight),0,0,INTER_AREA);
 
@@ -483,6 +483,7 @@ void MainWindow::zoomSpeedSlot()
     zoomSpeed=ui->zoomSpeedSlider->value();
     ui->statusBar->showMessage("Zoom speed changed!",3000);
 }
+
 //变倍的启动和停止——v1.4
 void MainWindow::plusSlot()
 {
@@ -499,6 +500,7 @@ void MainWindow::plusSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::minusSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_ZOOM_DEC_CONTROL,0,zoomSpeed,0,FALSE,NULL))
@@ -514,6 +516,7 @@ void MainWindow::minusSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::plusStopSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_ZOOM_ADD_CONTROL,0,zoomSpeed,0,TRUE,NULL))
@@ -529,6 +532,7 @@ void MainWindow::plusStopSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 void MainWindow::minusStopSlot()
 {
     if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_PTZ_ZOOM_DEC_CONTROL,0,zoomSpeed,0,TRUE,NULL))
@@ -561,6 +565,7 @@ void MainWindow::resetSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 //精确定位
 void MainWindow::goSlot()
 {
@@ -576,12 +581,14 @@ void MainWindow::goSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 //清空对话框
 void MainWindow::clearSlot()
 {
     ui->verticalLineEdit->clear();
     ui->horizontalLineEdit->clear();
 }
+
 //变倍复位
 void MainWindow::rezoomSlot()
 {
@@ -596,6 +603,7 @@ void MainWindow::rezoomSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 //控制变倍
 void MainWindow::zoomSlot()
 {
@@ -610,6 +618,7 @@ void MainWindow::zoomSlot()
     ui->horizontalLineEdit->setText(QString::number(horizon,10));
     ui->zoomLineEdit->setText(QString::number(zoom,10));
 }
+
 //清空对话框2
 void MainWindow::clear2Slot()
 {
@@ -656,12 +665,13 @@ void ImgPro::readBallSlot()
             ballTrackImg=ballImg.clone();//追踪用原图
             mutex3.unlock();
 
-            waitKey(1000/ballRate);
+            waitKey(30);
             //mutex01.unlock();
         }
     }
     return;
 }
+
 void ImgPro::readGunSlot()
 {
     while(GUN)
@@ -676,7 +686,7 @@ void ImgPro::readGunSlot()
 
             emit getGun();
 
-            waitKey(1000/gunRate);
+            waitKey(30);
             //mutex02.unlock();
         }
     }
