@@ -3,6 +3,7 @@
 
 using namespace std;
 using namespace cv;
+using namespace cv::xfeatures2d;
 
 //进行图像操作的变量——v1.0
 //增加枪机变量——v1.3
@@ -57,6 +58,15 @@ int rwidth,rheight;
 QPoint beginp,endp;
 //QPixmap ballmap;————那个Pixmap报错的原因！！！！
 
+// 枪球矫正——v1.0
+
+double va = 0.239;
+double vb = 49.653;
+double ha = -0.3101;
+double hb = 634.28;
+
+
+
 
 //构造函数——v1.0
 MainWindow::MainWindow(QWidget *parent) :
@@ -103,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent) :
     */
 
     //窗口和状态栏——v1.5
-    MainWindow::setWindowTitle("Camera  Control  System --- v1.2");
+    MainWindow::setWindowTitle("Camera  Control  System --- v1.3");
     QLabel *copyright = new QLabel(this);
     copyright->setText("Copyright   ©   LAB   369");
     ui->statusBar->addPermanentWidget(copyright);
@@ -164,6 +174,9 @@ MainWindow::MainWindow(QWidget *parent) :
     imgpro5->moveToThread(&imgtracker);
     imgtracker.start();
     QObject::connect(this,SIGNAL(startBallTrack()),imgpro5,SLOT(ballTrackSlot()));
+
+    // 矫正——v1.0
+    QObject::connect(ui->rectifyPushButton, SIGNAL(clicked()), this, SLOT(rectifySlot()));
 }
 
 MainWindow::~MainWindow()
@@ -812,9 +825,12 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             point = ui->gunWindowLabel->mapFromGlobal(point);
             if(point.x()>=0 && point.x()<=lwidth/2 && point.y()>=0 && point.y()<=lheight)
             {
-                //进行坐标到角度的变换
-                vertical=0.239*point.y()*2 + 49.653;
-                horizon=-0.3101*point.x()*2 + 634.28;
+                // 进行坐标到角度的变换
+                // vertical=0.239*point.y()*2 + 49.653;
+                // horizon=-0.3101*point.x()*2 + 634.28;
+
+                vertical=va*point.y()*2 + vb;
+                horizon=ha*point.x()*2 + hb;
                 zoom=50;
                 if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_EXTPTZ_EXACTGOTO,horizon,vertical,zoom,FALSE,NULL))
                 {
@@ -935,4 +951,155 @@ void ImgPro::ballTrackSlot()
         rectangle(ballTrack, box, Scalar(255, 0, 0), 2, 1);
         mutex5.unlock();
     }
+}
+
+
+// 枪球矫正——v1.0
+
+double calc_a(vector<x_y> x_y_in) // 最小二乘法计算斜率
+{
+    double s1, s2, s3, s4;  // s1-x, s2-y, s3-xy, s4-x^2
+    int n;
+    if (x_y_in.size() <2 )
+    {
+        return 0;
+    }
+    else
+    {
+        s1 = 0;
+        s2 = 0;
+        s3 = 0;
+        s4 = 0;
+        n = 0;
+        vector<x_y>::iterator it;
+        for (it = x_y_in.begin(); it != x_y_in.end(); it++)
+        {
+            s1 += it->x;
+            s2 += it->y;
+            s3 += it->x * it->y;
+            s4 += it->x * it->x;
+            n++;
+        }
+        return (s1*s2 - n * s3) / (s1*s1 - n * s4);
+
+    }
+}
+
+double calc_b(vector<x_y> x_y_in) // 最小二乘法计算截距
+{
+    double s1, s2, s3, s4;  // s1-x, s2-y, s3-xy, s4-x^2
+    int n;
+    if (x_y_in.begin() == x_y_in.end())
+    {
+        return 0;
+    }
+    else
+    {
+        s1 = 0;
+        s2 = 0;
+        s3 = 0;
+        s4 = 0;
+        n = 0;
+        vector<x_y>::iterator it;
+        for (it = x_y_in.begin(); it != x_y_in.end(); it++)
+        {
+            s1 += it->x;
+            s2 += it->y;
+            s3 += it->x * it->y;
+            s4 += it->x * it->x;
+            n++;
+        }
+        return (s4*s2 - s1 * s3) / (n*s4 - s1 * s1);
+
+    }
+}
+
+void MainWindow::rectifySlot()
+{
+
+
+    mutex1.lock();
+    Mat ballSrc = ballImg.clone();
+    mutex1.unlock();
+
+    mutex2.lock();
+    Mat gunSrc = gunImg.clone();
+    mutex2.unlock();
+
+    cv::resize(ballSrc, ballSrc, Size(800, 600));
+    cv::resize(gunSrc, gunSrc, Size(800, 600));
+
+    int minHessian = 1500;
+    Ptr<SurfFeatureDetector> detector = SurfFeatureDetector::create(minHessian);  // 特征检测器
+
+    vector<cv::KeyPoint> key_points_1, key_points_2;
+
+    Mat dstImage1, dstImage2;
+    detector->detectAndCompute(ballSrc, Mat(), key_points_1, dstImage1);
+    detector->detectAndCompute(gunSrc, Mat(), key_points_2, dstImage2);
+
+
+
+    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("FlannBased");
+    vector<DMatch>mach;
+
+    matcher->match(dstImage1, dstImage2, mach);
+
+    double Max_dist = 0;
+    double Min_dist = 100;
+
+    for (int i = 0; i < dstImage1.rows; i++)
+    {
+        double dist = mach[i].distance;
+        if (dist < Min_dist)Min_dist = dist;
+        if (dist > Max_dist)Max_dist = dist;
+    }
+
+    vector<DMatch>goodmaches;  // 筛选匹配特征点
+    for (int i = 0; i < dstImage1.rows; i++)
+    {
+        if (mach[i].distance < 1.3* Min_dist)  // 这个数可以改，越小越准，但匹配的点对越少
+            goodmaches.push_back(mach[i]);  // 把符合条件的mach中的点压入栈中
+    }
+
+    Mat img_maches;
+    drawMatches(ballSrc, key_points_1, gunSrc, key_points_2, goodmaches, img_maches, Scalar::all(-1), Scalar(0xff, 0xff, 0xff));
+    cv::resize(img_maches,img_maches,Size(800, 300));
+    imshow("匹配效果", img_maches);
+    vector<x_y> x_h, y_v;
+    double l_ha, l_hb, l_va, l_vb;
+
+    for (int i = 0; i < goodmaches.size(); i++)
+    {
+        double h, v;
+        h = horizon - (key_points_1[goodmaches[i].queryIdx].pt.x - 400)*0.135;
+        v = vertical + (key_points_1[goodmaches[i].queryIdx].pt.y - 300)*0.1;
+
+        x_h.push_back(x_y(key_points_2[goodmaches[i].trainIdx].pt.x, h));
+        y_v.push_back(x_y(key_points_2[goodmaches[i].trainIdx].pt.y, v));
+
+        l_ha = calc_a(x_h);
+        l_hb = calc_b(x_h);
+        l_va = calc_a(y_v);
+        l_vb = calc_b(y_v);
+
+        if ((l_ha!=0) && (l_hb!=0) && (l_va!=0) && (l_vb!=0))
+        {
+            qDebug() << "h = " << l_ha << " * x + " << l_hb << endl;
+            qDebug() << "v = " << l_va << " * y + " << l_vb << endl;
+            ha = l_ha;
+            hb = l_hb;
+            va = l_va;
+            vb = l_vb;
+
+        }
+        else
+        {
+            qDebug() << "Error: Less than two points! \n";
+        }
+
+    }
+
+
+    return ;
 }

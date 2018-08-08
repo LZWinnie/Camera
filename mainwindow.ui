@@ -136,6 +136,19 @@
       <string>Select</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="rectifyPushButton">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>24</y>
+       <width>73</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Rectify</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_2">
     <property name="geometry">
@@ -486,7 +499,7 @@
      <x>0</x>
      <y>0</y>
      <width>1162</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

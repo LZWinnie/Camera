@@ -29,6 +29,9 @@
 #include <opencv2/core/utility.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/xfeatures2d/nonfree.hpp>
 #include <iostream>
 #include <cstring>
 #include <QPainter>
@@ -105,6 +108,7 @@ private slots:
 
     void ballSelectSlot();
 
+    void rectifySlot();
 
 protected:
     void closeEvent(QCloseEvent *);
@@ -149,6 +153,15 @@ public slots:
 
     //void paintBallSlot();
     void ballTrackSlot();
+};
+
+class x_y
+{
+public:
+    x_y(double x, double y) :x(x), y(y) {}
+    x_y() :x(0), y(0) {}
+    double x;
+    double y;
 };
 
 #endif // MAINWINDOW_H
