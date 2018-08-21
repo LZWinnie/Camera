@@ -51,9 +51,10 @@ Ptr<Tracker> tracker = TrackerKCF::create();
 Rect2d box;
 Mat ballTrack,ballTrackImg;
 bool isinit=false;
+bool isSelect = false;  // 记录是否按下Select键
 
 //画框——v2.0
-bool mouseispressed=false;
+bool mouseispressed = false;
 int rwidth,rheight;
 QPoint beginp,endp;
 //QPixmap ballmap;————那个Pixmap报错的原因！！！！
@@ -810,6 +811,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 {
     if(event->button() == Qt::LeftButton)
     {
+
         if(!ui->gunCheckBox->isChecked())
         {
             //获得起始点
@@ -831,7 +833,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
                 vertical=va*point.y()*2 + vb;
                 horizon=ha*point.x()*2 + hb;
-                zoom=50;
+                zoom=44;
                 if(FALSE==CLIENT_DHPTZControlEx2(lLoginHandle,0,DH_EXTPTZ_EXACTGOTO,horizon,vertical,zoom,FALSE,NULL))
                 {
                     ui->statusBar->showMessage("Go to Point Fail!",2000);
@@ -847,6 +849,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 }
 
 //目标追踪选择框——v2.0
+/*
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
     if(mouseispressed)
@@ -857,30 +860,35 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
         //emit paintBall();
     }
 }
+*/
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
     endp=event->globalPos();
-    endp=ui->ballWindowLabel->mapFromGlobal(endp);
-    //更改鼠标状态
-    mouseispressed=false;
-    //emit paintBall();
+    endp=ui->ballWindowLabel->mapFromGlobal(endp);	
+		
+	//更改鼠标状态
+	mouseispressed = false;
+	// emit paintBall();
+	// this->setMouseTracking(false);
 
-    this->setMouseTracking(false);
+    if (isSelect)  // 加入判断条件，防止在任意时间按下鼠标时触发tracker导致闪退
+	{
+		isSelect = false;
+		box = Rect2d(beginp.x(), beginp.y(), endp.x() - beginp.x(), endp.y() - beginp.y());
 
-    box=Rect2d(beginp.x(),beginp.y(),endp.x()-beginp.x(),endp.y()-beginp.y());
+		//mutex3.lock();
+		mutex3.lock();
+		ballTrack = ballTrackImg.clone();
+		mutex3.unlock();
 
-    //mutex3.lock();
-    mutex3.lock();
-    ballTrack=ballTrackImg.clone();
-    mutex3.unlock();
-
-    cv::resize(ballTrack,ballTrack,Size(lwidth,lheight),0,0,INTER_AREA);
-    rectangle(ballTrack, box, Scalar(0, 255, 0), 2, 1);
-    tracker = TrackerKCF::create();//清空
-    isinit=tracker->init(ballTrack, box);
-    //mutex3.unlock();
-    emit startBallTrack();
+		cv::resize(ballTrack, ballTrack, Size(lwidth, lheight), 0, 0, INTER_AREA);
+		rectangle(ballTrack, box, Scalar(0, 255, 0), 2, 1);
+		tracker = TrackerKCF::create();//清空
+		isinit = tracker->init(ballTrack, box);
+		//mutex3.unlock();
+		emit startBallTrack();
+	}
 }
 
 //隐藏枪机画面——v1.10
@@ -916,7 +924,9 @@ void ImgPro::paintBallSlot()
 void MainWindow::ballSelectSlot()
 {
     this->setMouseTracking(true);
-    isinit=false;
+    isinit = false;
+	isSelect = true;
+
 }
 
 /*//这个也凉了——QPixmap: Must construct a QGuiApplication before a QPixmap

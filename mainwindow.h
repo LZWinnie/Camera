@@ -119,7 +119,7 @@ protected:
     void keyReleaseEvent(QKeyEvent *);
 
     void mousePressEvent(QMouseEvent *);//——v1.9
-    void mouseMoveEvent(QMouseEvent *);
+    // void mouseMoveEvent(QMouseEvent *);
     void mouseReleaseEvent(QMouseEvent *);
 
     //void paintEvent(QPaintEvent *);
