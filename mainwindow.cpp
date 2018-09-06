@@ -78,11 +78,9 @@ MainWindow::MainWindow(QWidget *parent) :
     timer1 = new QTimer(this);
     timer2 = new QTimer(this);
 
-    //QObject::connect(ui->loginButton,SIGNAL(clicked()),this,SLOT(startCameraSlot()));//——v1.0打开摄像头
     QObject::connect(ui->loginButton,SIGNAL(clicked()),this,SLOT(loginSlot()));//——v1.2
     QObject::connect(ui->logoutButton,SIGNAL(clicked()),this,SLOT(logoutSlot()));//——v1.2
 
-    //QObject::connect(timer,SIGNAL(timeout()),this,SLOT(getFrameSlot()));//——v1.0
     QObject::connect(timer1,SIGNAL(timeout()),this,SLOT(showBallSlot()));//——v1.1
     QObject::connect(timer2,SIGNAL(timeout()),this,SLOT(showGunSlot()));//——v1.1
 
@@ -98,23 +96,9 @@ MainWindow::MainWindow(QWidget *parent) :
     imgproThread2.start();
     QObject::connect(this,SIGNAL(startGunCamera()),imgpro2,SLOT(readGunSlot()));
 
-    /*
-    //处理图片进程——v1.6
-    ImgPro *imgpro3 = new ImgPro;
-    imgpro3->moveToThread(&imgproThread3);// 调用moveToThread将该任务交割imgproThread——v1.1
-    imgproThread3.start();//启动线程——v1.1
-    //QObject::connect(this,SIGNAL(startBallCamera()),imgpro1,SLOT(getBallImageSlot()));//——v1.1
-    QObject::connect(imgpro1,SIGNAL(getBall()),imgpro3,SLOT(getBallImageSlot()));
-
-    ImgPro *imgpro4 = new ImgPro;
-    imgpro4->moveToThread(&imgproThread4);// 调用moveToThread将该任务交割imgproThread——v1.1
-    imgproThread4.start();//启动线程——v1.1
-    //QObject::connect(this,SIGNAL(startGunCamera()),imgpro2,SLOT(getGunImageSlot()));//——v1.1
-    QObject::connect(imgpro2,SIGNAL(getGun()),imgpro4,SLOT(getGunImageSlot()));
-    */
 
     //窗口和状态栏——v1.5
-    MainWindow::setWindowTitle("Camera  Control  System --- v1.3");
+    MainWindow::setWindowTitle("Camera  Control  System --- Ver2.3");
     QLabel *copyright = new QLabel(this);
     copyright->setText("Copyright   ©   LAB   369");
     ui->statusBar->addPermanentWidget(copyright);
@@ -163,11 +147,6 @@ MainWindow::MainWindow(QWidget *parent) :
     //控制GUN窗口隐藏——v1.10
     QObject::connect(ui->gunCheckBox,SIGNAL(stateChanged(int)),this,SLOT(gunVisibleSlot()));
 
-    //画框——v2.0
-    //ImgPro *imgpro6 = new ImgPro;
-    //imgpro6->moveToThread(&imgRect);
-    //imgRect.start();
-    //QObject::connect(this,SIGNAL(paintBall()),imgpro6,SLOT(paintBallSlot()));
 
     QObject::connect(ui->selectPushButton,SIGNAL(clicked()),this,SLOT(ballSelectSlot()));
 
@@ -243,27 +222,13 @@ void MainWindow::loginSlot()
 //登出函数——v1.2
 void MainWindow::logoutSlot()
 {
-    //为了防止程序意外停止（在读视频流的地方），所以要检测当所有进程都解锁了之后，也就是可以被logout锁住之后，再release视频流
-    //while(!mutex1.tryLock());
-    //while(!mutex2.tryLock());
-    //while(!mutex3.tryLock());
-    //while(!mutex4.tryLock());
     BALL=false;
-    //ballCap->release();//释放cap以便于停止线程
     imgproThread1.quit();
-    //imgproThread1.wait();听说只quit停不下来，要wait一下，但是wait之后就卡死了
     timer1->stop();//退出登录
     GUN=false;
-    //gunCap->release();//释放cap以便于停止线程
     imgproThread2.quit();
-    //imgproThread2.wait();
     timer2->stop();//退出登录
-    //imgproThread3.quit();
     imgproThread3.exit();
-    //imgproThread3.wait();
-    //imgproThread4.quit();
-    //imgproThread4.exit();
-    //imgproThread4.wait();
     isinit=false;
     imgtracker.quit();
     CLIENT_Logout(lLoginHandle);
@@ -286,16 +251,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
         imgproThread2.quit();//退出线程
         qDebug()<<"Thread2 is running!";
     }
-    /*if(imgproThread3.isRunning())
-    {
-        imgproThread3.quit();//退出线程
-        qDebug()<<"Thread3 is running!";
-    }
-    if(imgproThread4.isRunning())
-    {
-        imgproThread4.quit();//退出线程
-        qDebug()<<"Thread4 is running!";
-    }*/
     if(imgtracker.isRunning())
     {
         imgtracker.quit();
@@ -325,10 +280,6 @@ void MainWindow::showBallSlot()
         mutex5.lock();//互斥锁
         ball=ballTrack.clone();//复制一个mat用于处理
         mutex5.unlock();//解锁
-        //cv::resize(ball,ball,Size(lwidth,lheight),0,0,INTER_AREA);
-        //tracker->update(ball, box);
-        //rectangle(ball, box, Scalar(255, 0, 0), 2, 1);
-
         ballImage=MainWindow::Mat2QImage(ball);
         ui->ballWindowLabel->setPixmap(QPixmap::fromImage(ballImage));
     }
@@ -707,36 +658,6 @@ void ImgPro::readGunSlot()
     return;
 }
 
-/*
-//后台循环处理得到ballImage图像——v1.1
-void ImgPro::getBallImageSlot()
-{
-    mutex1.lock();//互斥锁
-    ball=ballImg.clone();//复制一个mat用于处理
-    mutex1.unlock();//解锁
-    cv::resize(ball,ball,Size(lwidth,lheight),0,0,INTER_AREA);
-    mutex3.lock();
-    ballImage=Mat2QImage(ball);
-    mutex3.unlock();
-
-    //qDebug()<<"ERROR: Can't open the camera";
-    return;
-}
-//后台循环处理得到gunImage图像——v1.3
-void ImgPro::getGunImageSlot()
-{
-    mutex2.lock();
-    gun=gunImg.clone();
-    mutex2.unlock();
-    cv::resize(gun,gun,Size(lwidth/2,lheight/2),0,0,INTER_AREA);
-    mutex4.lock();
-    gunImage=Mat2QImage(gun);
-    mutex4.unlock();
-
-    //qDebug()<<"ERROR: Can't open the camera";
-    return;
-}
-*/
 
 /*************************************************************************************/
 
@@ -747,7 +668,7 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     QAction *action=new QAction(this);
     QPoint point = event->globalPos();
     point = ui->gunWindowLabel->mapFromGlobal(point);
-    if(point.x()>=0 && point.x()<=lwidth/2 && point.y()>=0 && point.y()<=lheight/2)
+    if(point.x()>=0 && point.x()<=lwidth/2 && point.y()>=0 && point.y()<=lheight/2 && ui->gunCheckBox->isChecked())
     {
         action->setText("x="+QString::number(point.x())+"\ty="+QString::number(point.y()));
         menu->addAction(action);
@@ -812,7 +733,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     if(event->button() == Qt::LeftButton)
     {
 
-        if(!ui->gunCheckBox->isChecked())
+        if(isSelect && !ui->gunCheckBox->isChecked())
         {
             //获得起始点
             beginp=event->globalPos();
@@ -825,11 +746,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             //获得坐标
             QPoint point = event->globalPos();
             point = ui->gunWindowLabel->mapFromGlobal(point);
-            if(point.x()>=0 && point.x()<=lwidth/2 && point.y()>=0 && point.y()<=lheight)
+            if(point.x()>=0 && point.x()<=lwidth/2 && point.y()>=0 && point.y()<=lheight/2 && ui->gunCheckBox->isChecked())
             {
-                // 进行坐标到角度的变换
-                // vertical=0.239*point.y()*2 + 49.653;
-                // horizon=-0.3101*point.x()*2 + 634.28;
 
                 vertical=va*point.y()*2 + vb;
                 horizon=ha*point.x()*2 + hb;
@@ -848,20 +766,6 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     }
 }
 
-//目标追踪选择框——v2.0
-/*
-void MainWindow::mouseMoveEvent(QMouseEvent *event)
-{
-    if(mouseispressed)
-    {
-        endp=event->globalPos();
-        endp=ui->ballWindowLabel->mapFromGlobal(endp);
-        //update();
-        //emit paintBall();
-    }
-}
-*/
-
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
     endp=event->globalPos();
@@ -869,8 +773,6 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 		
 	//更改鼠标状态
 	mouseispressed = false;
-	// emit paintBall();
-	// this->setMouseTracking(false);
 
     if (isSelect)  // 加入判断条件，防止在任意时间按下鼠标时触发tracker导致闪退
 	{
@@ -906,21 +808,8 @@ void MainWindow::gunVisibleSlot()
 
 /*************************************************************************************/
 
-/*//画框——v2.0 这个有点凉，完了再说
-void ImgPro::paintBallSlot()
-{
-    if (mouseispressed)
-        {
-            QRect selectedRect(beginp, endp);
-            ballmap=QPixmap::fromImage(ballshow).copy(selectedRect);
 
-            painter.drawPixmap(selectedRect.topLeft(), ballmap);
-            painter.drawRect(selectedRect);
-        }
-}
-*/
-
-//控制画框——v2.0
+//select键
 void MainWindow::ballSelectSlot()
 {
     this->setMouseTracking(true);
@@ -929,23 +818,6 @@ void MainWindow::ballSelectSlot()
 
 }
 
-/*//这个也凉了——QPixmap: Must construct a QGuiApplication before a QPixmap
-void MainWindow::paintEvent(QPaintEvent *event)
-{
-    painter.begin(this);          //进行重绘;
-    QPixmap ballmap;
-    if (mouseispressed)
-    {
-        QRect selectedRect(beginp, endp);
-        ballmap = QPixmap::fromImage(ballshow).copy(selectedRect);
-        painter.drawPixmap(selectedRect.topLeft(), ballmap);
-        painter.drawRect(selectedRect);
-    }
-
-    painter.end();  //重绘结束;
-    ui->ballWindowLabel->setPixmap(ballmap);
-}
-*/
 
 void ImgPro::ballTrackSlot()
 {
@@ -1045,10 +917,9 @@ void MainWindow::rectifySlot()
     vector<cv::KeyPoint> key_points_1, key_points_2;
 
     Mat dstImage1, dstImage2;
-    detector->detectAndCompute(ballSrc, Mat(), key_points_1, dstImage1);
-    detector->detectAndCompute(gunSrc, Mat(), key_points_2, dstImage2);
-
-
+	Mat V;
+    detector->detectAndCompute(ballSrc, noArray(), key_points_1, dstImage1);
+    detector->detectAndCompute(gunSrc, noArray(), key_points_2, dstImage2);
 
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("FlannBased");
     vector<DMatch>mach;
