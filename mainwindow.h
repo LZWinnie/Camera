@@ -34,9 +34,8 @@
 #include <opencv2/xfeatures2d/nonfree.hpp>
 #include <iostream>
 #include <cstring>
-#include <QPainter>
 #include <QRect>
-#include <QPaintDevice>
+#include "help.h"
 
 #define KEY_DOWN(VK_NONAME) ((GetAsyncKeyState(VK_NONAME) & 0x8000) ? 1:0)
 #define SSTR( x ) static_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << x ) ).str();
@@ -48,31 +47,25 @@ class MainWindow;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    QThread imgproThread1;//用于后台读取——v1.6
+    QThread imgproThread1;//用于后台读取
     QThread imgproThread2;
-
-    QThread imgproThread3;//用于后台处理——v1.1
-    QThread imgproThread4;//用于后台处理枪机——v1.3
-
-    QThread imgRect;//用于画框
     QThread imgtracker;//用于追踪处理
 
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     QImage Mat2QImage(const cv::Mat& mat);
+    Help *help;
 
 signals:
-    void startBallCamera();//——v1.0
-    void startGunCamera();//——v1.3
-
-    //void paintBall();
+    void startBallCamera();
+    void startGunCamera();
 
     void startBallTrack();
 
 private slots:
-    void loginSlot();//——v1.2
-    void logoutSlot();//——v1.2
+    void loginSlot();
+    void logoutSlot();
 
     void upSlot();
     void downSlot();
@@ -87,16 +80,16 @@ private slots:
     void verticalSpeedSlot();
     void horizontalSpeedSlot();
 
-    void showBallSlot();//——v1.1
-    void showGunSlot();//——v1.3
+    void showBallSlot();
+    void showGunSlot();
 
-    void plusSlot();//——v1.4
+    void plusSlot();
     void plusStopSlot();
     void minusSlot();
     void minusStopSlot();
     void zoomSpeedSlot();
 
-    void resetSlot();//——v1.5
+    void resetSlot();
     void goSlot();
     void clearSlot();
 
@@ -104,33 +97,43 @@ private slots:
     void rezoomSlot();
     void clear2Slot();
 
-    void gunVisibleSlot();//——v1.10
+    void gunVisibleSlot();
 
     void ballSelectSlot();
 
     void rectifySlot();
 
+    void upActionSlot();
+    void downActionSlot();
+    void leftActionSlot();
+    void rightActionSlot();
+
+    void plusActionSlot();
+    void minusActionSlot();
+
+    void helpSlot();
+
+
 protected:
     void closeEvent(QCloseEvent *);
 
-    void contextMenuEvent(QContextMenuEvent *);//——v1.7
+    void contextMenuEvent(QContextMenuEvent *);
 
-    void keyPressEvent(QKeyEvent *);//——v1.9
+    void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
 
-    void mousePressEvent(QMouseEvent *);//——v1.9
-    // void mouseMoveEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
+    void mousePressEvent(QMouseEvent *);
 
-    //void paintEvent(QPaintEvent *);
+    void mouseReleaseEvent(QMouseEvent *);
 
 private:
     Ui::MainWindow *ui;
     QTimer *timer1,*timer2;
-    QPainter painter;
 
 };
-//为了多线程后台处理图片，定义一个新类——v1.1
+
+
+//为了多线程后台处理图片，定义一个新类
 class ImgPro : public QObject
 {
     Q_OBJECT
@@ -139,22 +142,17 @@ public:
     explicit ImgPro(QObject *parent = 0){}
 
 signals:
-    //void showball();//——v1.6
-    //void showgun();
     void getBall();
     void getGun();
 
 public slots:
-    void readBallSlot();//——v1.6
+    void readBallSlot();
     void readGunSlot();
 
-    //void getBallImageSlot();//——v1.1
-    //void getGunImageSlot();//——v1.3
-
-    //void paintBallSlot();
     void ballTrackSlot();
 };
 
+//用于存储用于枪球矫正的点
 class x_y
 {
 public:

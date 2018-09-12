@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Help</class>
+ <widget class="QWidget" name="Help">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>660</width>
+    <height>460</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="help.qrc">
+    <normaloff>:/new/prefix1/help.ico</normaloff>:/new/prefix1/help.ico</iconset>
+  </property>
+  <widget class="QStackedWidget" name="stackedWidget">
+   <property name="geometry">
+    <rect>
+     <x>11</x>
+     <y>11</y>
+     <width>640</width>
+     <height>378</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="page_1">
+    <property name="styleSheet">
+     <string notr="true">image: url(:/new/prefix1/help01.png);</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="page_2">
+    <property name="styleSheet">
+     <string notr="true">image: url(:/new/prefix1/help02.png);</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="page_3">
+    <property name="styleSheet">
+     <string notr="true">image: url(:/new/prefix1/help03.png);</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="page_4">
+    <property name="styleSheet">
+     <string notr="true">image: url(:/new/prefix1/help04.png);</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="page_5">
+    <property name="styleSheet">
+     <string notr="true">image: url(:/new/prefix1/help05.png);</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="page_6">
+    <property name="styleSheet">
+     <string notr="true">image: url(:/new/prefix1/help06.png);</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>420</x>
+     <y>410</y>
+     <width>195</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QPushButton" name="helpPreviousButton">
+      <property name="text">
+       <string>上一页</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="helpNextButton">
+      <property name="text">
+       <string>下一页</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources>
+  <include location="help.qrc"/>
+ </resources>
+ <connections/>
+</ui>

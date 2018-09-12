@@ -195,7 +195,7 @@
       <x>20</x>
       <y>90</y>
       <width>261</width>
-      <height>211</height>
+      <height>231</height>
      </rect>
     </property>
     <property name="title">
@@ -205,7 +205,7 @@
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>20</y>
+       <y>30</y>
        <width>61</width>
        <height>28</height>
       </rect>
@@ -218,7 +218,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>60</y>
+       <y>70</y>
        <width>61</width>
        <height>28</height>
       </rect>
@@ -231,7 +231,7 @@
      <property name="geometry">
       <rect>
        <x>180</x>
-       <y>60</y>
+       <y>70</y>
        <width>61</width>
        <height>28</height>
       </rect>
@@ -244,7 +244,7 @@
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>100</y>
+       <y>110</y>
        <width>61</width>
        <height>28</height>
       </rect>
@@ -257,7 +257,7 @@
      <property name="geometry">
       <rect>
        <x>50</x>
-       <y>140</y>
+       <y>150</y>
        <width>160</width>
        <height>22</height>
       </rect>
@@ -270,7 +270,7 @@
      <property name="geometry">
       <rect>
        <x>50</x>
-       <y>180</y>
+       <y>190</y>
        <width>160</width>
        <height>22</height>
       </rect>
@@ -283,7 +283,7 @@
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>60</y>
+       <y>70</y>
        <width>61</width>
        <height>28</height>
       </rect>
@@ -297,7 +297,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>310</y>
+      <y>330</y>
       <width>261</width>
       <height>151</height>
      </rect>
@@ -382,7 +382,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>470</y>
+      <y>490</y>
       <width>261</width>
       <height>201</height>
      </rect>
@@ -499,9 +499,39 @@
      <x>0</x>
      <y>0</y>
      <width>1162</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>系统(L)</string>
+    </property>
+    <addaction name="loginAction"/>
+    <addaction name="logoutAction"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>控制(&amp;C)</string>
+    </property>
+    <addaction name="upAction"/>
+    <addaction name="downAction"/>
+    <addaction name="leftAction"/>
+    <addaction name="rightAction"/>
+    <addaction name="resetAction"/>
+    <addaction name="separator"/>
+    <addaction name="plusAction"/>
+    <addaction name="minusAction"/>
+    <addaction name="rezoomAction"/>
+   </widget>
+   <widget class="QMenu" name="menu_5">
+    <property name="title">
+     <string>帮助(&amp;H)</string>
+    </property>
+    <addaction name="helpAction"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_5"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -512,8 +542,69 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="loginAction">
+   <property name="text">
+    <string>登录</string>
+   </property>
+  </action>
+  <action name="logoutAction">
+   <property name="text">
+    <string>登出</string>
+   </property>
+  </action>
+  <action name="upAction">
+   <property name="text">
+    <string>上</string>
+   </property>
+  </action>
+  <action name="downAction">
+   <property name="text">
+    <string>下</string>
+   </property>
+  </action>
+  <action name="leftAction">
+   <property name="text">
+    <string>左</string>
+   </property>
+  </action>
+  <action name="rightAction">
+   <property name="text">
+    <string>右</string>
+   </property>
+  </action>
+  <action name="resetAction">
+   <property name="text">
+    <string>坐标复位</string>
+   </property>
+  </action>
+  <action name="plusAction">
+   <property name="text">
+    <string>放大</string>
+   </property>
+  </action>
+  <action name="minusAction">
+   <property name="text">
+    <string>缩小</string>
+   </property>
+  </action>
+  <action name="rezoomAction">
+   <property name="text">
+    <string>缩放复位</string>
+   </property>
+  </action>
+  <action name="helpAction">
+   <property name="icon">
+    <iconset resource="help.qrc">
+     <normaloff>:/new/prefix1/help.ico</normaloff>:/new/prefix1/help.ico</iconset>
+   </property>
+   <property name="text">
+    <string>操作指南</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="help.qrc"/>
+ </resources>
  <connections/>
 </ui>
