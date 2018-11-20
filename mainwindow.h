@@ -1,16 +1,39 @@
+//======================================================================
+//
+//        Copyright © 2018 LAB369
+//        All rights reserved
+//
+//        filename :mainwindow.h
+//        description :主窗口类定义，包含各种整体操作，及ui界面所需要的槽
+//
+//        created by LZW at 2018/10/21
+//
+//======================================================================
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QImage>
+#include <QObject>
+
+#include "avglobal.h"
+#include "dhconfigsdk.h"
+#include "dhnetsdk.h"
 #include <opencv2/opencv.hpp>
+#include "ballcamera.h"
+#include "ballstatus.h"
+#include "dhparameter.h"
+#include "guncamera.h"
+#include "imgpro.h"
+#include "global.h"
+#include "help.h"
+#include "track.h"
+
+#include <QThread>
+#include <QImage>
 #include <QDebug>
 #include <QTimer>
 #include <QPixmap>
-#include <QThread>
-#include <QCloseEvent>
-#include "dhnetsdk.h"
-#include "dhconfigsdk.h"
 #include <QSlider>
 #include <QString>
 #include <QLabel>
@@ -19,26 +42,10 @@
 #include <QContextMenuEvent>
 #include <QMenu>
 #include <QAction>
-#include <QCursor>
-#include <QPoint>
 #include <QKeyEvent>
 #include <QMouseEvent>
-#include <opencv2/tracking.hpp>
-#include <opencv2/tracking/tracker.hpp>
-#include <opencv2/core/ocl.hpp>
-#include <opencv2/core/utility.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/features2d/features2d.hpp>
-#include <opencv2/opencv.hpp>
-#include <opencv2/xfeatures2d/nonfree.hpp>
-#include <iostream>
-#include <cstring>
-#include <QRect>
-#include "help.h"
-
-#define KEY_DOWN(VK_NONAME) ((GetAsyncKeyState(VK_NONAME) & 0x8000) ? 1:0)
-#define SSTR( x ) static_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << x ) ).str();
+#include <QCloseEvent>
+#include <QMessageBox>
 
 namespace Ui {
 class MainWindow;
@@ -47,25 +54,40 @@ class MainWindow;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    QThread imgproThread1;//用于后台读取
-    QThread imgproThread2;
-    QThread imgtracker;//用于追踪处理
+
+private:
+    Ui::MainWindow *ui;
+
+    QTimer *timer1,*timer2;         //定时器
 
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    QImage Mat2QImage(const cv::Mat& mat);
-    Help *help;
+
+    QThread ballImgProThread;   //用于后台读取的线程
+    QThread gunImgProThread;
+
+    Help *help;     //帮助窗口
+    Track *track;   //目标追踪窗口
+
+    void showBallStatus();      //显示当前球机状态在界面上
 
 signals:
-    void startBallCamera();
-    void startGunCamera();
+    void startBallCamera(ballCamera* ballc);
+    void startGunCamera(gunCamera* gunc);
+    //void startBallTrack();
 
-    void startBallTrack();
-
-private slots:
+public slots:
     void loginSlot();
     void logoutSlot();
+
+    void showBallSlot();
+    void showGunSlot();
+
+    void debugSlot();
+
+    void verticalSpeedSlot();
+    void horizontalSpeedSlot();
 
     void upSlot();
     void downSlot();
@@ -75,23 +97,18 @@ private slots:
     void upStopSlot();
     void downStopSlot();
     void leftStopSlot();
-    void rightStopSlot();
-
-    void verticalSpeedSlot();
-    void horizontalSpeedSlot();
-
-    void showBallSlot();
-    void showGunSlot();
-
-    void plusSlot();
-    void plusStopSlot();
-    void minusSlot();
-    void minusStopSlot();
-    void zoomSpeedSlot();
+    void rightStopSlot();   
 
     void resetSlot();
     void goSlot();
     void clearSlot();
+
+    void zoomSpeedSlot();
+
+    void plusSlot();
+    void plusStopSlot();
+    void minusSlot();
+    void minusStopSlot();   
 
     void zoomSlot();
     void rezoomSlot();
@@ -99,9 +116,7 @@ private slots:
 
     void gunVisibleSlot();
 
-    void ballSelectSlot();
-
-    void rectifySlot();
+    //void rectifySlot();
 
     void upActionSlot();
     void downActionSlot();
@@ -112,6 +127,7 @@ private slots:
     void minusActionSlot();
 
     void helpSlot();
+    void trackSlot();
 
 
 protected:
@@ -119,47 +135,11 @@ protected:
 
     void contextMenuEvent(QContextMenuEvent *);
 
+    void mousePressEvent(QMouseEvent *);
+
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
 
-    void mousePressEvent(QMouseEvent *);
-
-    void mouseReleaseEvent(QMouseEvent *);
-
-private:
-    Ui::MainWindow *ui;
-    QTimer *timer1,*timer2;
-
-};
-
-
-//为了多线程后台处理图片，定义一个新类
-class ImgPro : public QObject
-{
-    Q_OBJECT
-
-public:
-    explicit ImgPro(QObject *parent = 0){}
-
-signals:
-    void getBall();
-    void getGun();
-
-public slots:
-    void readBallSlot();
-    void readGunSlot();
-
-    void ballTrackSlot();
-};
-
-//用于存储用于枪球矫正的点
-class x_y
-{
-public:
-    x_y(double x, double y) :x(x), y(y) {}
-    x_y() :x(0), y(0) {}
-    double x;
-    double y;
 };
 
 #endif // MAINWINDOW_H

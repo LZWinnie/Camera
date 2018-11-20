@@ -103,44 +103,24 @@
       <string>GUN</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="sourceComboBox">
+    <widget class="QPushButton" name="trackingButton">
      <property name="geometry">
       <rect>
-       <x>60</x>
-       <y>25</y>
-       <width>73</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <item>
-      <property name="text">
-       <string>Origin</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Tracker</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QPushButton" name="selectPushButton">
-     <property name="geometry">
-      <rect>
-       <x>180</x>
-       <y>24</y>
+       <x>70</x>
+       <y>20</y>
        <width>73</width>
        <height>25</height>
       </rect>
      </property>
      <property name="text">
-      <string>Select</string>
+      <string>Tracking</string>
      </property>
     </widget>
     <widget class="QPushButton" name="rectifyPushButton">
      <property name="geometry">
       <rect>
-       <x>300</x>
-       <y>24</y>
+       <x>210</x>
+       <y>20</y>
        <width>73</width>
        <height>25</height>
       </rect>
